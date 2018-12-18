@@ -1,0 +1,1094 @@
+---
+title: "preprocessing"
+author: "Desmond Ong"
+date: "May 10, 2016"
+output: html_document
+---
+
+This file does the preprocessing and saves the following files:
+
+dNodesTime into: data_allDorms_allTime.csv
+dEdgesTime into: data_edges_allDorms_allTime.csv
+
+
+Any other files can read this in using the following command:
+
+dNodesTime = read.csv("data_allDorms_allTime.csv", header=T)
+dEdgesTime = read.csv("data_edges_allDorms_allTime_q1.csv", header=T)
+
+"data_edges_allDorms_allQuestions_t0.csv"
+"data_edges_allDorms_allQuestions_t1.csv"
+"data_edges_allDorms_allQuestions_t2.csv"
+
+
+For initial submission, I've redacted the data to:
+data_allDorms_release.csv
+
+
+```{r helper-functions, echo=FALSE, message=FALSE}
+setwd("~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms")
+source("helper_functions.R")
+```
+
+```{r reading-in-nomination-data, echo=FALSE}
+# First, read in the Nomination Data. Each row is 1 participant
+# Replace the names with IDs (it'll checking to see if any un-matched names).
+
+# note, have a placeholder columns for t1,t2 as first column because it's missing a gender column.
+
+### Use this to combine Trancos and Rinconada From Winter and Spring
+
+### TRANCOS WINTER ###
+setwd("~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms")
+roster = read.csv('rosters/trancos_winter_roster.csv', header=T)
+
+d_t0 = replaceNamesWithIDUsingRoster(read.csv('Other Files/trancos_winter/trancos_winter_data_t0.csv', header=T)[,c(467,38,42:113)], roster, listOfColumns=c(2:74))
+d_t1 = replaceNamesWithIDUsingRoster(read.csv('Other Files/trancos_winter/trancos_winter_data_t1.csv', header=T)[,c(12,11,14:85)], roster, listOfColumns=c(2:74))
+d_t2 = replaceNamesWithIDUsingRoster(read.csv('Other Files/trancos_winter/trancos_winter_data_t2.csv', header=T)[,c(12,3,13:84)], roster, listOfColumns=c(2:74))
+
+tWinterList = c(1:53)
+
+### RINCONADA SPRING ###
+roster = read.csv('~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms/rosters/rinconada_spring_roster.csv', header=T)
+roster$ID = roster$ID+100
+roster$ID[roster$ID==99]=-1
+
+d_t0 = rbind(d_t0, replaceNamesWithIDUsingRoster(read.csv('~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms/Other Files/rinconada_spring/rinconada_spring_data_t0.csv', header=T)[,c(498,38,42:113)], roster, listOfColumns=c(2:74)))
+d_t1 = rbind(d_t1, replaceNamesWithIDUsingRoster(read.csv('~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms/Other Files/rinconada_spring/rinconada_spring_data_t1.csv', header=T)[,c(12,11,14:85)], roster, listOfColumns=c(2:74)))
+d_t2 = rbind(d_t2, replaceNamesWithIDUsingRoster(read.csv('~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms/Other Files/rinconada_spring/rinconada_spring_data_t2.csv', header=T)[,c(12,3,13:84)], roster, listOfColumns=c(2:74)))
+
+rSpringList = c(101:112,114:128,130:134, 136:143,145:147)
+
+### TRANCOS FALL ###
+roster=read.csv('~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms/rosters/trancos_fall_roster.csv', header=T)
+
+#d_t0 = rbind(d_t0, replaceNamesWithIDUsingRoster(read.csv('~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms/Other Files/trancos_rinconada_fall/Social_Network_Trait_Fall_Trancos_2015.csv', header=T)[,c(497,38,42:113)], roster, listOfColumns=c(2:74)))
+d_t0 = rbind(d_t0, replaceNamesWithIDUsingRoster(read.csv('~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms/Other Files/trancos_rinconada_fall/trancos_fall_data_t0.csv', header=T)[,c(497,38,42:113)], roster, listOfColumns=c(2:74)))
+d_t1 = rbind(d_t1, replaceNamesWithIDUsingRoster(read.csv('~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms/Other Files/trancos_rinconada_fall/trancos_fall_data_t1.csv', header=T)[,c(12,11,14:85)], roster, listOfColumns=c(2:74)))
+d_t2 = rbind(d_t2, replaceNamesWithIDUsingRoster(read.csv('~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms/Other Files/trancos_rinconada_fall/trancos_fall_data_t2.csv', header=T)[,c(12,3,13:84)], roster, listOfColumns=c(2:74)))
+
+tFallList = c(201:246)
+
+### RINCONADA FALL ###
+roster = read.csv('~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms/rosters/rinconada_fall_roster.csv', header=T)
+
+#d_t0 = rbind(d_t0, replaceNamesWithIDUsingRoster(read.csv('~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms/Other Files/trancos_rinconada_fall/Social_Network_Trait_Fall_Rinconada_2015.csv', header=T)[,c(497,38,42:113)], roster, listOfColumns=c(2:74)))
+d_t0 = rbind(d_t0, replaceNamesWithIDUsingRoster(read.csv('~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms/Other Files/trancos_rinconada_fall/rinconada_fall_data_t0.csv', header=T)[,c(497,38,42:113)], roster, listOfColumns=c(2:74)))
+d_t1 = rbind(d_t1, replaceNamesWithIDUsingRoster(read.csv('~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms/Other Files/trancos_rinconada_fall/rinconada_fall_data_t1.csv', header=T)[,c(12,11,14:85)], roster, listOfColumns=c(2:74)))
+d_t2 = rbind(d_t2, replaceNamesWithIDUsingRoster(read.csv('~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms/Other Files/trancos_rinconada_fall/rinconada_fall_data_t2.csv', header=T)[,c(12,3,13:84)], roster, listOfColumns=c(2:74)))
+
+rFallList = c(301:351)
+
+allList = c(1:53,101:112,114:128,130:134, 136:143,145:147, 201:246, 301:351)
+
+# makeNominationMatrixFromList: 3 arguments: data file, list of participants and nomination question
+
+nominationMatrix_q1_t0 = makeNominationMatrixFromList(d_t0, allList, 1)
+nominationMatrix_q1_t1 = makeNominationMatrixFromList(d_t1, allList, 1)
+nominationMatrix_q1_t2 = makeNominationMatrixFromList(d_t2, allList, 1)
+
+nominationMatrix_q2_t0 = makeNominationMatrixFromList(d_t0, allList, 2)
+nominationMatrix_q2_t1 = makeNominationMatrixFromList(d_t1, allList, 2)
+nominationMatrix_q2_t2 = makeNominationMatrixFromList(d_t2, allList, 2)
+
+nominationMatrix_q3_t0 = makeNominationMatrixFromList(d_t0, allList, 3)
+nominationMatrix_q3_t1 = makeNominationMatrixFromList(d_t1, allList, 3)
+nominationMatrix_q3_t2 = makeNominationMatrixFromList(d_t2, allList, 3)
+
+nominationMatrix_q4_t0 = makeNominationMatrixFromList(d_t0, allList, 4)
+nominationMatrix_q4_t1 = makeNominationMatrixFromList(d_t1, allList, 4)
+nominationMatrix_q4_t2 = makeNominationMatrixFromList(d_t2, allList, 4)
+
+nominationMatrix_q5_t0 = makeNominationMatrixFromList(d_t0, allList, 5)
+nominationMatrix_q5_t1 = makeNominationMatrixFromList(d_t1, allList, 5)
+nominationMatrix_q5_t2 = makeNominationMatrixFromList(d_t2, allList, 5)
+
+nominationMatrix_q6_t0 = makeNominationMatrixFromList(d_t0, allList, 6)
+nominationMatrix_q6_t1 = makeNominationMatrixFromList(d_t1, allList, 6)
+nominationMatrix_q6_t2 = makeNominationMatrixFromList(d_t2, allList, 6)
+
+nominationMatrix_q7_t0 = makeNominationMatrixFromList(d_t0, allList, 7)
+nominationMatrix_q7_t1 = makeNominationMatrixFromList(d_t1, allList, 7)
+nominationMatrix_q7_t2 = makeNominationMatrixFromList(d_t2, allList, 7)
+
+nominationMatrix_q8_t0 = makeNominationMatrixFromList(d_t0, allList, 8)
+nominationMatrix_q8_t1 = makeNominationMatrixFromList(d_t1, allList, 8)
+nominationMatrix_q8_t2 = makeNominationMatrixFromList(d_t2, allList, 8)
+
+nominationMatrix_q9_t0 = makeNominationMatrixFromList(d_t0, allList, 9)
+nominationMatrix_q9_t1 = makeNominationMatrixFromList(d_t1, allList, 9)
+nominationMatrix_q9_t2 = makeNominationMatrixFromList(d_t2, allList, 9)
+```
+
+
+
+```{r node-level-proprocessing, echo=FALSE, results='hide', eval=TRUE}
+setwd("~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms")
+dNodes = read.csv('Other Files/Transf_Trait_All4Dorms.csv', header=T, na.strings = "#NULL!")
+#dNodes = read.csv('~/Dropbox/3_R21/1_Trait Survey/Data processing/Combined 4 dorms/Other Files/Trait_Reduced.csv', header=T, na.strings = "#NULL!")
+
+dNodes=dNodes[dNodes$ID %in% allList,]
+
+
+dNodes$dorm = factor((1 + 1*(dNodes$ID>53) + 1*(dNodes$ID>147) + 1*(dNodes$ID>246)),
+                     levels = c(1,2,3,4),
+                     labels = c("TWinter", "RSpring", "TFall", "RFall"))
+# trancos winter: ID in (1:53)
+# rinc spring: IDs in (101:112,114:128,130:134, 136:143,145:147)
+# trancos fall: IDs in (201:246)
+# rinc fall: IDs in (301:351)
+
+for(timeCounter in c(0:2)) {
+  dNodes$time = timeCounter
+  if(timeCounter==0) {
+    d_to_use = d_t0
+  } else if (timeCounter==1) {
+    d_to_use = d_t1
+  } else {
+    d_to_use = d_t2
+  }
+  whichQuestion = 1
+  nominationMatrix_currentQuestion = makeNominationMatrixFromList(d_to_use, allList, whichQuestion)
+  
+  for(row in 1:nrow(dNodes)) {
+    dNodes$inDegreeQ1[row] = calculateInDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$outDegreeFullQ1[row] = calculateFullOutDegree(d_to_use, dNodes$ID[row], whichQuestion)
+    dNodes$outDegreeQ1[row] = calculateOutDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$numReciprocalQ1[row] = calculateReciprocalDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+  }
+    #tWinterEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion))
+      #tWinterGraph = graph.edgelist(as.matrix(tWinterEdgeList[,1:2]), directed=TRUE)
+      tWinterGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rSpringEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion))
+      #rSpringGraph = graph.edgelist(as.matrix(rSpringEdgeList[,1:2]), directed=TRUE)
+      rSpringGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion), mode="directed", diag=FALSE)
+
+      #tFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion))
+      #tFallGraph = graph.edgelist(as.matrix(tFallEdgeList[,1:2]), directed=TRUE)
+      tFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion))
+      #rFallGraph = graph.edgelist(as.matrix(rFallEdgeList[,1:2]), directed=TRUE)
+      rFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion), mode="directed", diag=FALSE)
+
+
+    # pagerank algorithm
+    dNodes$pageRankQ1 = c(page.rank(tWinterGraph, algo = "prpack", 
+                            vids = V(tWinterGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rSpringGraph, algo = "prpack", 
+                            vids = V(rSpringGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(tFallGraph, algo = "prpack", 
+                            vids = V(tFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rFallGraph, algo = "prpack", 
+                            vids = V(rFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector)
+
+    # this is size of neighborhood 2 degrees away (self + friends + friends' friends)
+    dNodes$neighborhood2inQ1 = c(neighborhood.size(tWinterGraph, 2,  mode = "in"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "in"),
+                               neighborhood.size(tFallGraph, 2,  mode = "in"),
+                               neighborhood.size(rFallGraph, 2,  mode = "in"))
+  
+      dNodes$neighborhood2outQ1 = c(neighborhood.size(tWinterGraph, 2,  mode = "out"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "out"),
+                               neighborhood.size(tFallGraph, 2,  mode = "out"),
+                               neighborhood.size(rFallGraph, 2,  mode = "out"))
+
+    # hub and authority scores: http://igraph.org/r/doc/kleinberg.html
+    dNodes$authorityScoreQ1 = c(authority.score(tWinterGraph)$vector,
+                                authority.score(rSpringGraph)$vector,
+                                authority.score(tFallGraph)$vector,
+                                authority.score(rFallGraph)$vector)
+    dNodes$hubScoreQ1 = c(hub.score(tWinterGraph)$vector,
+                          hub.score(rSpringGraph)$vector,
+                          hub.score(tFallGraph)$vector,
+                          hub.score(rFallGraph)$vector)
+
+    # Betweenness centrality http://igraph.org/r/doc/betweenness.html
+    # number of geodesics (shortest paths) going through the node
+    dNodes$betweennessCentralityQ1 = c(betweenness(tWinterGraph, normalized = TRUE),
+                                       betweenness(rSpringGraph, normalized = TRUE),
+                                       betweenness(tFallGraph, normalized = TRUE),
+                                       betweenness(rFallGraph, normalized = TRUE))
+
+    # Closeness centrality http://igraph.org/r/doc/closeness.html
+    # how many steps is required to access every other node from a given node.
+    dNodes$closenessCentralityQ1 = c(closeness(tWinterGraph, normalized = TRUE),
+                                     closeness(rSpringGraph, normalized = TRUE),
+                                     closeness(tFallGraph, normalized = TRUE),
+                                     closeness(rFallGraph, normalized = TRUE))
+
+    # Bonacich alpha centrality, http://igraph.org/r/doc/alpha.centrality.html
+    # generalization of eigenvalue centrality to a directed graph
+#     dNodes$alphaCentralityQ1 = c(alpha.centrality(tWinterGraph),
+#                                  alpha.centrality(rSpringGraph),
+#                                  alpha.centrality(tFallGraph),
+#                                  alpha.centrality(rFallGraph))
+
+
+
+    # Local Clustering Coefficient: *Percentage* of friends who are friends with each other.
+    # NOTE that this is considering -undirected- edges. Direction is ignored!
+    dNodes$localClusteringCoefficientQ1 = c(transitivity(tWinterGraph, type="local"),
+                                            transitivity(rSpringGraph, type="local"),
+                                            transitivity(tFallGraph, type="local"),
+                                            transitivity(rFallGraph, type="local"))
+                                         
+    #calculate 
+    geodesicDistanceQ1TrancFallOut=distances(tFallGraph, mode="out")
+    geodesicDistanceQ1RincFallOut=distances(rFallGraph, mode="out")
+    geodesicDistanceQ1TrancFallAll=distances(tFallGraph, mode="all")
+    geodesicDistanceQ1RincFallAll=distances(rFallGraph, mode="all")
+   
+    write.csv(geodesicDistanceQ1TrancFallOut, "SocDistance_Out_Q1_TrancFall.csv")
+    write.csv(geodesicDistanceQ1TrancFallAll, "SocDistance_All_Q1_TrancFall.csv")
+    write.csv(geodesicDistanceQ1RincFallOut, "SocDistance_Out_Q1_RincFall.csv")
+    write.csv(geodesicDistanceQ1RincFallAll, "SocDistance_All_Q1_RincFall.csv")
+    
+  whichQuestion = 2
+  nominationMatrix_currentQuestion = makeNominationMatrixFromList(d_to_use, allList, whichQuestion)
+  
+  for(row in 1:nrow(dNodes)) {
+    dNodes$inDegreeQ2[row] = calculateInDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$outDegreeFullQ2[row] = calculateFullOutDegree(d_to_use, dNodes$ID[row], whichQuestion)
+    dNodes$outDegreeQ2[row] = calculateOutDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$numReciprocalQ2[row] = calculateReciprocalDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+  }
+    #tWinterEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion))
+      #tWinterGraph = graph.edgelist(as.matrix(tWinterEdgeList[,1:2]), directed=TRUE)
+      tWinterGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rSpringEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion))
+      #rSpringGraph = graph.edgelist(as.matrix(rSpringEdgeList[,1:2]), directed=TRUE)
+      rSpringGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion), mode="directed", diag=FALSE)
+
+      #tFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion))
+      #tFallGraph = graph.edgelist(as.matrix(tFallEdgeList[,1:2]), directed=TRUE)
+      tFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion))
+      #rFallGraph = graph.edgelist(as.matrix(rFallEdgeList[,1:2]), directed=TRUE)
+      rFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion), mode="directed", diag=FALSE)
+
+
+    dNodes$pageRankQ2 = c(page.rank(tWinterGraph, algo = "prpack", 
+                            vids = V(tWinterGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rSpringGraph, algo = "prpack", 
+                            vids = V(rSpringGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(tFallGraph, algo = "prpack", 
+                            vids = V(tFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rFallGraph, algo = "prpack", 
+                            vids = V(rFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector)
+    dNodes$neighborhood2inQ2 = c(neighborhood.size(tWinterGraph, 2,  mode = "in"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "in"),
+                               neighborhood.size(tFallGraph, 2,  mode = "in"),
+                               neighborhood.size(rFallGraph, 2,  mode = "in"))
+      dNodes$neighborhood2outQ2 = c(neighborhood.size(tWinterGraph, 2,  mode = "out"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "out"),
+                               neighborhood.size(tFallGraph, 2,  mode = "out"),
+                               neighborhood.size(rFallGraph, 2,  mode = "out"))
+
+    dNodes$authorityScoreQ2 = c(authority.score(tWinterGraph)$vector,
+                                authority.score(rSpringGraph)$vector,
+                                authority.score(tFallGraph)$vector,
+                                authority.score(rFallGraph)$vector)
+    dNodes$hubScoreQ2 = c(hub.score(tWinterGraph)$vector,
+                          hub.score(rSpringGraph)$vector,
+                          hub.score(tFallGraph)$vector,
+                          hub.score(rFallGraph)$vector)
+    dNodes$betweennessCentralityQ2 = c(betweenness(tWinterGraph, normalized = TRUE),
+                                       betweenness(rSpringGraph, normalized = TRUE),
+                                       betweenness(tFallGraph, normalized = TRUE),
+                                       betweenness(rFallGraph, normalized = TRUE))
+    dNodes$closenessCentralityQ2 = c(closeness(tWinterGraph, normalized = TRUE),
+                                     closeness(rSpringGraph, normalized = TRUE),
+                                     closeness(tFallGraph, normalized = TRUE),
+                                     closeness(rFallGraph, normalized = TRUE))
+#     dNodes$alphaCentralityQ2 = c(alpha.centrality(tWinterGraph),
+#                                  alpha.centrality(rSpringGraph),
+#                                  alpha.centrality(tFallGraph),
+#                                  alpha.centrality(rFallGraph))
+    dNodes$localClusteringCoefficientQ2 = c(transitivity(tWinterGraph, type="local"),
+                                            transitivity(rSpringGraph, type="local"),
+                                            transitivity(tFallGraph, type="local"),
+                                            transitivity(rFallGraph, type="local"))
+  
+  
+  
+  whichQuestion = 3
+  nominationMatrix_currentQuestion = makeNominationMatrixFromList(d_to_use, allList, whichQuestion)
+  
+  for(row in 1:nrow(dNodes)) {
+    dNodes$inDegreeQ3[row] = calculateInDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$outDegreeFullQ3[row] = calculateFullOutDegree(d_to_use, dNodes$ID[row], whichQuestion)
+    dNodes$outDegreeQ3[row] = calculateOutDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$numReciprocalQ3[row] = calculateReciprocalDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+  }
+      #tWinterEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion))
+      #tWinterGraph = graph.edgelist(as.matrix(tWinterEdgeList[,1:2]), directed=TRUE)
+      tWinterGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rSpringEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion))
+      #rSpringGraph = graph.edgelist(as.matrix(rSpringEdgeList[,1:2]), directed=TRUE)
+      rSpringGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion), mode="directed", diag=FALSE)
+
+      #tFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion))
+      #tFallGraph = graph.edgelist(as.matrix(tFallEdgeList[,1:2]), directed=TRUE)
+      tFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion))
+      #rFallGraph = graph.edgelist(as.matrix(rFallEdgeList[,1:2]), directed=TRUE)
+      rFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion), mode="directed", diag=FALSE)
+
+
+    dNodes$pageRankQ3 = c(page.rank(tWinterGraph, algo = "prpack", 
+                            vids = V(tWinterGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rSpringGraph, algo = "prpack", 
+                            vids = V(rSpringGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(tFallGraph, algo = "prpack", 
+                            vids = V(tFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rFallGraph, algo = "prpack", 
+                            vids = V(rFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector)
+    dNodes$neighborhood2inQ3 = c(neighborhood.size(tWinterGraph, 2,  mode = "in"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "in"),
+                               neighborhood.size(tFallGraph, 2,  mode = "in"),
+                               neighborhood.size(rFallGraph, 2,  mode = "in"))
+      dNodes$neighborhood2outQ3 = c(neighborhood.size(tWinterGraph, 2,  mode = "out"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "out"),
+                               neighborhood.size(tFallGraph, 2,  mode = "out"),
+                               neighborhood.size(rFallGraph, 2,  mode = "out"))
+    dNodes$authorityScoreQ3 = c(authority.score(tWinterGraph)$vector,
+                                authority.score(rSpringGraph)$vector,
+                                authority.score(tFallGraph)$vector,
+                                authority.score(rFallGraph)$vector)
+    dNodes$hubScoreQ3 = c(hub.score(tWinterGraph)$vector,
+                          hub.score(rSpringGraph)$vector,
+                          hub.score(tFallGraph)$vector,
+                          hub.score(rFallGraph)$vector)
+    dNodes$betweennessCentralityQ3 = c(betweenness(tWinterGraph, normalized = TRUE),
+                                       betweenness(rSpringGraph, normalized = TRUE),
+                                       betweenness(tFallGraph, normalized = TRUE),
+                                       betweenness(rFallGraph, normalized = TRUE))
+    dNodes$closenessCentralityQ3 = c(closeness(tWinterGraph, normalized = TRUE),
+                                     closeness(rSpringGraph, normalized = TRUE),
+                                     closeness(tFallGraph, normalized = TRUE),
+                                     closeness(rFallGraph, normalized = TRUE))
+#     dNodes$alphaCentralityQ3 = c(alpha.centrality(tWinterGraph),
+#                                  alpha.centrality(rSpringGraph),
+#                                  alpha.centrality(tFallGraph),
+#                                  alpha.centrality(rFallGraph))
+    dNodes$localClusteringCoefficientQ3 = c(transitivity(tWinterGraph, type="local"),
+                                            transitivity(rSpringGraph, type="local"),
+                                            transitivity(tFallGraph, type="local"),
+                                            transitivity(rFallGraph, type="local"))
+  
+  
+  
+  whichQuestion = 4
+  nominationMatrix_currentQuestion = makeNominationMatrixFromList(d_to_use, allList, whichQuestion)
+  
+  for(row in 1:nrow(dNodes)) {
+    dNodes$inDegreeQ4[row] = calculateInDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$outDegreeFullQ4[row] = calculateFullOutDegree(d_to_use, dNodes$ID[row], whichQuestion)
+    dNodes$outDegreeQ4[row] = calculateOutDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$numReciprocalQ4[row] = calculateReciprocalDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+  }
+      #tWinterEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion))
+      #tWinterGraph = graph.edgelist(as.matrix(tWinterEdgeList[,1:2]), directed=TRUE)
+      tWinterGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rSpringEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion))
+      #rSpringGraph = graph.edgelist(as.matrix(rSpringEdgeList[,1:2]), directed=TRUE)
+      rSpringGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion), mode="directed", diag=FALSE)
+
+      #tFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion))
+      #tFallGraph = graph.edgelist(as.matrix(tFallEdgeList[,1:2]), directed=TRUE)
+      tFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion))
+      #rFallGraph = graph.edgelist(as.matrix(rFallEdgeList[,1:2]), directed=TRUE)
+      rFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion), mode="directed", diag=FALSE)
+
+
+    dNodes$pageRankQ4 = c(page.rank(tWinterGraph, algo = "prpack", 
+                            vids = V(tWinterGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rSpringGraph, algo = "prpack", 
+                            vids = V(rSpringGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(tFallGraph, algo = "prpack", 
+                            vids = V(tFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rFallGraph, algo = "prpack", 
+                            vids = V(rFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector)
+    dNodes$neighborhood2inQ4 = c(neighborhood.size(tWinterGraph, 2,  mode = "in"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "in"),
+                               neighborhood.size(tFallGraph, 2,  mode = "in"),
+                               neighborhood.size(rFallGraph, 2,  mode = "in"))
+      dNodes$neighborhood2outQ4 = c(neighborhood.size(tWinterGraph, 2,  mode = "out"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "out"),
+                               neighborhood.size(tFallGraph, 2,  mode = "out"),
+                               neighborhood.size(rFallGraph, 2,  mode = "out"))
+    dNodes$authorityScoreQ4 = c(authority.score(tWinterGraph)$vector,
+                                authority.score(rSpringGraph)$vector,
+                                authority.score(tFallGraph)$vector,
+                                authority.score(rFallGraph)$vector)
+    dNodes$hubScoreQ4 = c(hub.score(tWinterGraph)$vector,
+                          hub.score(rSpringGraph)$vector,
+                          hub.score(tFallGraph)$vector,
+                          hub.score(rFallGraph)$vector)
+    dNodes$betweennessCentralityQ4 = c(betweenness(tWinterGraph, normalized = TRUE),
+                                       betweenness(rSpringGraph, normalized = TRUE),
+                                       betweenness(tFallGraph, normalized = TRUE),
+                                       betweenness(rFallGraph, normalized = TRUE))
+    dNodes$closenessCentralityQ4 = c(closeness(tWinterGraph, normalized = TRUE),
+                                     closeness(rSpringGraph, normalized = TRUE),
+                                     closeness(tFallGraph, normalized = TRUE),
+                                     closeness(rFallGraph, normalized = TRUE))
+#     dNodes$alphaCentralityQ4 = c(alpha.centrality(tWinterGraph),
+#                                  alpha.centrality(rSpringGraph),
+#                                  alpha.centrality(tFallGraph),
+#                                  alpha.centrality(rFallGraph))
+    dNodes$localClusteringCoefficientQ4 = c(transitivity(tWinterGraph, type="local"),
+                                            transitivity(rSpringGraph, type="local"),
+                                            transitivity(tFallGraph, type="local"),
+                                            transitivity(rFallGraph, type="local"))
+  
+  
+  whichQuestion = 5
+  nominationMatrix_currentQuestion = makeNominationMatrixFromList(d_to_use, allList, whichQuestion)
+  
+  for(row in 1:nrow(dNodes)) {
+    dNodes$inDegreeQ5[row] = calculateInDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$outDegreeFullQ5[row] = calculateFullOutDegree(d_to_use, dNodes$ID[row], whichQuestion)
+    dNodes$outDegreeQ5[row] = calculateOutDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$numReciprocalQ5[row] = calculateReciprocalDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+  }
+      #tWinterEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion))
+      #tWinterGraph = graph.edgelist(as.matrix(tWinterEdgeList[,1:2]), directed=TRUE)
+      tWinterGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rSpringEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion))
+      #rSpringGraph = graph.edgelist(as.matrix(rSpringEdgeList[,1:2]), directed=TRUE)
+      rSpringGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion), mode="directed", diag=FALSE)
+
+      #tFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion))
+      #tFallGraph = graph.edgelist(as.matrix(tFallEdgeList[,1:2]), directed=TRUE)
+      tFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion))
+      #rFallGraph = graph.edgelist(as.matrix(rFallEdgeList[,1:2]), directed=TRUE)
+      rFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion), mode="directed", diag=FALSE)
+
+
+    dNodes$pageRankQ5 = c(page.rank(tWinterGraph, algo = "prpack", 
+                            vids = V(tWinterGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rSpringGraph, algo = "prpack", 
+                            vids = V(rSpringGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(tFallGraph, algo = "prpack", 
+                            vids = V(tFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rFallGraph, algo = "prpack", 
+                            vids = V(rFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector)
+    dNodes$neighborhood2inQ5 = c(neighborhood.size(tWinterGraph, 2,  mode = "in"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "in"),
+                               neighborhood.size(tFallGraph, 2,  mode = "in"),
+                               neighborhood.size(rFallGraph, 2,  mode = "in"))
+      dNodes$neighborhood2outQ5 = c(neighborhood.size(tWinterGraph, 2,  mode = "out"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "out"),
+                               neighborhood.size(tFallGraph, 2,  mode = "out"),
+                               neighborhood.size(rFallGraph, 2,  mode = "out"))
+    dNodes$authorityScoreQ5 = c(authority.score(tWinterGraph)$vector,
+                                authority.score(rSpringGraph)$vector,
+                                authority.score(tFallGraph)$vector,
+                                authority.score(rFallGraph)$vector)
+    dNodes$hubScoreQ5 = c(hub.score(tWinterGraph)$vector,
+                          hub.score(rSpringGraph)$vector,
+                          hub.score(tFallGraph)$vector,
+                          hub.score(rFallGraph)$vector)
+    dNodes$betweennessCentralityQ5 = c(betweenness(tWinterGraph, normalized = TRUE),
+                                       betweenness(rSpringGraph, normalized = TRUE),
+                                       betweenness(tFallGraph, normalized = TRUE),
+                                       betweenness(rFallGraph, normalized = TRUE))
+    dNodes$closenessCentralityQ5 = c(closeness(tWinterGraph, normalized = TRUE),
+                                     closeness(rSpringGraph, normalized = TRUE),
+                                     closeness(tFallGraph, normalized = TRUE),
+                                     closeness(rFallGraph, normalized = TRUE))
+#     dNodes$alphaCentralityQ5 = c(alpha.centrality(tWinterGraph),
+#                                  alpha.centrality(rSpringGraph),
+#                                  alpha.centrality(tFallGraph),
+#                                  alpha.centrality(rFallGraph))
+    dNodes$localClusteringCoefficientQ5 = c(transitivity(tWinterGraph, type="local"),
+                                            transitivity(rSpringGraph, type="local"),
+                                            transitivity(tFallGraph, type="local"),
+                                            transitivity(rFallGraph, type="local"))
+  
+  
+
+  
+  whichQuestion = 6
+  nominationMatrix_currentQuestion = makeNominationMatrixFromList(d_to_use, allList, whichQuestion)
+  
+  for(row in 1:nrow(dNodes)) {
+    dNodes$inDegreeQ6[row] = calculateInDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$outDegreeFullQ6[row] = calculateFullOutDegree(d_to_use, dNodes$ID[row], whichQuestion)
+    dNodes$outDegreeQ6[row] = calculateOutDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$numReciprocalQ6[row] = calculateReciprocalDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+  }
+
+  # one component missing at t1
+#tWinterEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion))
+      #tWinterGraph = graph.edgelist(as.matrix(tWinterEdgeList[,1:2]), directed=TRUE)
+      tWinterGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rSpringEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion))
+      #rSpringGraph = graph.edgelist(as.matrix(rSpringEdgeList[,1:2]), directed=TRUE)
+      rSpringGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion), mode="directed", diag=FALSE)
+
+      #tFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion))
+      #tFallGraph = graph.edgelist(as.matrix(tFallEdgeList[,1:2]), directed=TRUE)
+      tFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion))
+      #rFallGraph = graph.edgelist(as.matrix(rFallEdgeList[,1:2]), directed=TRUE)
+      rFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion), mode="directed", diag=FALSE)
+    dNodes$pageRankQ6 = c(page.rank(tWinterGraph, algo = "prpack", 
+                            vids = V(tWinterGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rSpringGraph, algo = "prpack", 
+                            vids = V(rSpringGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(tFallGraph, algo = "prpack", 
+                            vids = V(tFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rFallGraph, algo = "prpack", 
+                            vids = V(rFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector)
+    dNodes$neighborhood2inQ6 = c(neighborhood.size(tWinterGraph, 2,  mode = "in"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "in"),
+                               neighborhood.size(tFallGraph, 2,  mode = "in"),
+                               neighborhood.size(rFallGraph, 2,  mode = "in"))
+      dNodes$neighborhood2outQ6 = c(neighborhood.size(tWinterGraph, 2,  mode = "out"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "out"),
+                               neighborhood.size(tFallGraph, 2,  mode = "out"),
+                               neighborhood.size(rFallGraph, 2,  mode = "out"))
+    dNodes$authorityScoreQ6 = c(authority.score(tWinterGraph)$vector,
+                                authority.score(rSpringGraph)$vector,
+                                authority.score(tFallGraph)$vector,
+                                authority.score(rFallGraph)$vector)
+    dNodes$hubScoreQ6 = c(hub.score(tWinterGraph)$vector,
+                          hub.score(rSpringGraph)$vector,
+                          hub.score(tFallGraph)$vector,
+                          hub.score(rFallGraph)$vector)
+    dNodes$betweennessCentralityQ6 = c(betweenness(tWinterGraph, normalized = TRUE),
+                                       betweenness(rSpringGraph, normalized = TRUE),
+                                       betweenness(tFallGraph, normalized = TRUE),
+                                       betweenness(rFallGraph, normalized = TRUE))
+    dNodes$closenessCentralityQ6 = c(closeness(tWinterGraph, normalized = TRUE),
+                                     closeness(rSpringGraph, normalized = TRUE),
+                                     closeness(tFallGraph, normalized = TRUE),
+                                     closeness(rFallGraph, normalized = TRUE))
+#     dNodes$alphaCentralityQ6 = c(alpha.centrality(tWinterGraph),
+#                                  alpha.centrality(rSpringGraph),
+#                                  alpha.centrality(tFallGraph),
+#                                  alpha.centrality(rFallGraph))
+    dNodes$localClusteringCoefficientQ6 = c(transitivity(tWinterGraph, type="local"),
+                                            transitivity(rSpringGraph, type="local"),
+                                            transitivity(tFallGraph, type="local"),
+                                            transitivity(rFallGraph, type="local"))
+  
+  
+  
+  whichQuestion = 7
+  nominationMatrix_currentQuestion = makeNominationMatrixFromList(d_to_use, allList, whichQuestion)
+  
+  for(row in 1:nrow(dNodes)) {
+    dNodes$inDegreeQ7[row] = calculateInDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$outDegreeFullQ7[row] = calculateFullOutDegree(d_to_use, dNodes$ID[row], whichQuestion)
+    dNodes$outDegreeQ7[row] = calculateOutDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$numReciprocalQ7[row] = calculateReciprocalDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+  }
+  
+      #tWinterEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion))
+      #tWinterGraph = graph.edgelist(as.matrix(tWinterEdgeList[,1:2]), directed=TRUE)
+      tWinterGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rSpringEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion))
+      #rSpringGraph = graph.edgelist(as.matrix(rSpringEdgeList[,1:2]), directed=TRUE)
+      rSpringGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion), mode="directed", diag=FALSE)
+
+      #tFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion))
+      #tFallGraph = graph.edgelist(as.matrix(tFallEdgeList[,1:2]), directed=TRUE)
+      tFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion))
+      #rFallGraph = graph.edgelist(as.matrix(rFallEdgeList[,1:2]), directed=TRUE)
+      rFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion), mode="directed", diag=FALSE)
+    dNodes$pageRankQ7 = c(page.rank(tWinterGraph, algo = "prpack", 
+                            vids = V(tWinterGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rSpringGraph, algo = "prpack", 
+                            vids = V(rSpringGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(tFallGraph, algo = "prpack", 
+                            vids = V(tFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rFallGraph, algo = "prpack", 
+                            vids = V(rFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector)
+    dNodes$neighborhood2inQ7 = c(neighborhood.size(tWinterGraph, 2,  mode = "in"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "in"),
+                               neighborhood.size(tFallGraph, 2,  mode = "in"),
+                               neighborhood.size(rFallGraph, 2,  mode = "in"))
+      dNodes$neighborhood2outQ7 = c(neighborhood.size(tWinterGraph, 2,  mode = "out"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "out"),
+                               neighborhood.size(tFallGraph, 2,  mode = "out"),
+                               neighborhood.size(rFallGraph, 2,  mode = "out"))
+    dNodes$authorityScoreQ7 = c(authority.score(tWinterGraph)$vector,
+                                authority.score(rSpringGraph)$vector,
+                                authority.score(tFallGraph)$vector,
+                                authority.score(rFallGraph)$vector)
+    dNodes$hubScoreQ7 = c(hub.score(tWinterGraph)$vector,
+                          hub.score(rSpringGraph)$vector,
+                          hub.score(tFallGraph)$vector,
+                          hub.score(rFallGraph)$vector)
+    dNodes$betweennessCentralityQ7 = c(betweenness(tWinterGraph, normalized = TRUE),
+                                       betweenness(rSpringGraph, normalized = TRUE),
+                                       betweenness(tFallGraph, normalized = TRUE),
+                                       betweenness(rFallGraph, normalized = TRUE))
+    dNodes$closenessCentralityQ7 = c(closeness(tWinterGraph, normalized = TRUE),
+                                     closeness(rSpringGraph, normalized = TRUE),
+                                     closeness(tFallGraph, normalized = TRUE),
+                                     closeness(rFallGraph, normalized = TRUE))
+#     dNodes$alphaCentralityQ7 = c(alpha.centrality(tWinterGraph),
+#                                  alpha.centrality(rSpringGraph),
+#                                  alpha.centrality(tFallGraph),
+#                                  alpha.centrality(rFallGraph))
+    dNodes$localClusteringCoefficientQ7 = c(transitivity(tWinterGraph, type="local"),
+                                            transitivity(rSpringGraph, type="local"),
+                                            transitivity(tFallGraph, type="local"),
+                                            transitivity(rFallGraph, type="local"))
+  
+  
+  
+  whichQuestion = 8
+  nominationMatrix_currentQuestion = makeNominationMatrixFromList(d_to_use, allList, whichQuestion)
+  
+  for(row in 1:nrow(dNodes)) {
+    dNodes$inDegreeQ8[row] = calculateInDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$outDegreeFullQ8[row] = calculateFullOutDegree(d_to_use, dNodes$ID[row], whichQuestion)
+    dNodes$outDegreeQ8[row] = calculateOutDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$numReciprocalQ8[row] = calculateReciprocalDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+  }
+  #tWinterEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion))
+      #tWinterGraph = graph.edgelist(as.matrix(tWinterEdgeList[,1:2]), directed=TRUE)
+      tWinterGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rSpringEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion))
+      #rSpringGraph = graph.edgelist(as.matrix(rSpringEdgeList[,1:2]), directed=TRUE)
+      rSpringGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion), mode="directed", diag=FALSE)
+
+      #tFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion))
+      #tFallGraph = graph.edgelist(as.matrix(tFallEdgeList[,1:2]), directed=TRUE)
+      tFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion))
+      #rFallGraph = graph.edgelist(as.matrix(rFallEdgeList[,1:2]), directed=TRUE)
+      rFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion), mode="directed", diag=FALSE)
+
+
+    dNodes$pageRankQ8 = c(page.rank(tWinterGraph, algo = "prpack", 
+                            vids = V(tWinterGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rSpringGraph, algo = "prpack", 
+                            vids = V(rSpringGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(tFallGraph, algo = "prpack", 
+                            vids = V(tFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rFallGraph, algo = "prpack", 
+                            vids = V(rFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector)
+    dNodes$neighborhood2inQ8 = c(neighborhood.size(tWinterGraph, 2,  mode = "in"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "in"),
+                               neighborhood.size(tFallGraph, 2,  mode = "in"),
+                               neighborhood.size(rFallGraph, 2,  mode = "in"))
+      dNodes$neighborhood2outQ8 = c(neighborhood.size(tWinterGraph, 2,  mode = "out"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "out"),
+                               neighborhood.size(tFallGraph, 2,  mode = "out"),
+                               neighborhood.size(rFallGraph, 2,  mode = "out"))
+    dNodes$authorityScoreQ8 = c(authority.score(tWinterGraph)$vector,
+                                authority.score(rSpringGraph)$vector,
+                                authority.score(tFallGraph)$vector,
+                                authority.score(rFallGraph)$vector)
+    dNodes$hubScoreQ8 = c(hub.score(tWinterGraph)$vector,
+                          hub.score(rSpringGraph)$vector,
+                          hub.score(tFallGraph)$vector,
+                          hub.score(rFallGraph)$vector)
+    dNodes$betweennessCentralityQ8 = c(betweenness(tWinterGraph, normalized = TRUE),
+                                       betweenness(rSpringGraph, normalized = TRUE),
+                                       betweenness(tFallGraph, normalized = TRUE),
+                                       betweenness(rFallGraph, normalized = TRUE))
+    dNodes$closenessCentralityQ8 = c(closeness(tWinterGraph, normalized = TRUE),
+                                     closeness(rSpringGraph, normalized = TRUE),
+                                     closeness(tFallGraph, normalized = TRUE),
+                                     closeness(rFallGraph, normalized = TRUE))
+#     dNodes$alphaCentralityQ8 = c(alpha.centrality(tWinterGraph),
+#                                  alpha.centrality(rSpringGraph),
+#                                  alpha.centrality(tFallGraph),
+#                                  alpha.centrality(rFallGraph))
+    dNodes$localClusteringCoefficientQ8 = c(transitivity(tWinterGraph, type="local"),
+                                            transitivity(rSpringGraph, type="local"),
+                                            transitivity(tFallGraph, type="local"),
+                                            transitivity(rFallGraph, type="local"))
+  
+  
+  
+  whichQuestion = 9
+  nominationMatrix_currentQuestion = makeNominationMatrixFromList(d_to_use, allList, whichQuestion)
+  
+  for(row in 1:nrow(dNodes)) {
+    dNodes$inDegreeQ9[row] = calculateInDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$outDegreeFullQ9[row] = calculateFullOutDegree(d_to_use, dNodes$ID[row], whichQuestion)
+    dNodes$outDegreeQ9[row] = calculateOutDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+    dNodes$numReciprocalQ9[row] = calculateReciprocalDegree(nominationMatrix_currentQuestion, dNodes$ID[row])
+  }
+      #tWinterEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion))
+      #tWinterGraph = graph.edgelist(as.matrix(tWinterEdgeList[,1:2]), directed=TRUE)
+      tWinterGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tWinterList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rSpringEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion))
+      #rSpringGraph = graph.edgelist(as.matrix(rSpringEdgeList[,1:2]), directed=TRUE)
+      rSpringGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rSpringList, whichQuestion), mode="directed", diag=FALSE)
+
+      #tFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion))
+      #tFallGraph = graph.edgelist(as.matrix(tFallEdgeList[,1:2]), directed=TRUE)
+      tFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, tFallList, whichQuestion), mode="directed", diag=FALSE)
+
+      #rFallEdgeList = makeEdgeListFromNominationMatrix(
+      #  makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion))
+      #rFallGraph = graph.edgelist(as.matrix(rFallEdgeList[,1:2]), directed=TRUE)
+      rFallGraph = graph.adjacency(makeNominationMatrixFromList(d_to_use, rFallList, whichQuestion), mode="directed", diag=FALSE)
+
+
+    dNodes$pageRankQ9 = c(page.rank(tWinterGraph, algo = "prpack", 
+                            vids = V(tWinterGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rSpringGraph, algo = "prpack", 
+                            vids = V(rSpringGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(tFallGraph, algo = "prpack", 
+                            vids = V(tFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector,
+                      page.rank(rFallGraph, algo = "prpack", 
+                            vids = V(rFallGraph), directed = TRUE, damping = 0.85,
+                            personalized = NULL, weights = NULL, options = NULL)$vector)
+    dNodes$neighborhood2inQ9 = c(neighborhood.size(tWinterGraph, 2,  mode = "in"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "in"),
+                               neighborhood.size(tFallGraph, 2,  mode = "in"),
+                               neighborhood.size(rFallGraph, 2,  mode = "in"))
+      dNodes$neighborhood2outQ9 = c(neighborhood.size(tWinterGraph, 2,  mode = "out"),
+                               neighborhood.size(rSpringGraph, 2,  mode = "out"),
+                               neighborhood.size(tFallGraph, 2,  mode = "out"),
+                               neighborhood.size(rFallGraph, 2,  mode = "out"))
+    dNodes$authorityScoreQ9 = c(authority.score(tWinterGraph)$vector,
+                                authority.score(rSpringGraph)$vector,
+                                authority.score(tFallGraph)$vector,
+                                authority.score(rFallGraph)$vector)
+    dNodes$hubScoreQ9 = c(hub.score(tWinterGraph)$vector,
+                          hub.score(rSpringGraph)$vector,
+                          hub.score(tFallGraph)$vector,
+                          hub.score(rFallGraph)$vector)
+    dNodes$betweennessCentralityQ9 = c(betweenness(tWinterGraph, normalized = TRUE),
+                                       betweenness(rSpringGraph, normalized = TRUE),
+                                       betweenness(tFallGraph, normalized = TRUE),
+                                       betweenness(rFallGraph, normalized = TRUE))
+    dNodes$closenessCentralityQ9 = c(closeness(tWinterGraph, normalized = TRUE),
+                                     closeness(rSpringGraph, normalized = TRUE),
+                                     closeness(tFallGraph, normalized = TRUE),
+                                     closeness(rFallGraph, normalized = TRUE))
+#     dNodes$alphaCentralityQ9 = c(alpha.centrality(tWinterGraph),
+#                                  alpha.centrality(rSpringGraph),
+#                                  alpha.centrality(tFallGraph),
+#                                  alpha.centrality(rFallGraph))
+    dNodes$localClusteringCoefficientQ9 = c(transitivity(tWinterGraph, type="local"),
+                                            transitivity(rSpringGraph, type="local"),
+                                            transitivity(tFallGraph, type="local"),
+                                            transitivity(rFallGraph, type="local"))
+  
+  
+  
+  if(timeCounter==0) {
+    dNodesTime = dNodes
+  } else {
+    dNodesTime = rbind(dNodesTime, dNodes)
+  }
+}
+
+dNodesTime$dormTimeInteraction = factor(interaction(dNodesTime$dorm, dNodesTime$time), 
+                                        levels=c("TWinter.0", "RSpring.0", "TFall.0", "RFall.0",
+                                                 "TWinter.1", "RSpring.1", "TFall.1", "RFall.1",
+                                                 "TWinter.2", "RSpring.2", "TFall.2", "RFall.2"))
+
+dNodesTime$timeFactor = factor(dNodesTime$time) # if you run regressions using this timeFactor, it'll be a categorical variable.
+
+dNodesTime$timeFactor01 = factor(dNodesTime$time, levels=c(0,1)) # 0 if time0, 1 if time1
+dNodesTime$timeFactor12 = factor(dNodesTime$time, levels=c(1,2), labels=c(0,1)) # 0 if time1, 1 if time2
+dNodesTime$timeFactor02 = factor(dNodesTime$time, levels=c(0,2), labels=c(0,1)) # 0 if time0, 1 if time2
+
+#dNodesTime = subset(dNodesTime, dNodesTime$time==0) # just time0 data.
+
+
+setwd("~/Dropbox/3_R21/1_Trait Survey/Data processing/_Cleaned_for_Publishing/data")
+write.csv(dNodesTime, "data_allDorms_allTime.csv", row.names=F)
+```
+
+
+
+```{r edge-level-preprocessing, echo=FALSE, results='hide', eval=FALSE}
+## Each row corresponds to the observation of an edge (or not an edge).
+
+dEdges = data.frame(fromID = c(), toID = c(), edge = c(), dormNumber = c(), time = c(), question = c())
+
+#for(whichQuestion in 1:9) {
+whichQuestion = 9
+  for(timeCounter in 0:2) {
+    if(timeCounter==0) {
+      d_to_use = d_t0
+    } else if (timeCounter==1) {
+      d_to_use = d_t1
+    } else {
+      d_to_use = d_t2
+    }
+    for(dormNumber in 1:4) {
+      if(dormNumber==1) {
+        currentDormList = tWinterList
+      } else if (dormNumber==2) {
+        currentDormList = rSpringList
+      } else if (dormNumber==3) {
+        currentDormList = tFallList
+      } else {
+        currentDormList = rFallList
+      }
+      cat(paste("now processing: Question Number: ", whichQuestion, ", time: ", timeCounter, ", dorm: ", dormNumber, "...\n", sep=""))
+      nominationMatrix_currentQuestion = makeNominationMatrixFromList(d_to_use, currentDormList, whichQuestion)
+      for(rowNumber in 1:length(rownames(nominationMatrix_currentQuestion))) {
+        fromID = rownames(nominationMatrix_currentQuestion)[rowNumber]
+        for(colNumber in 1:length(colnames(nominationMatrix_currentQuestion))) {
+          toID = colnames(nominationMatrix_currentQuestion)[colNumber]
+          if(fromID != toID) {
+            thisEdge = min(nominationMatrix_currentQuestion[rowNumber, colNumber], 1) 
+            dEdges = rbind(dEdges, data.frame(fromID = fromID, toID = toID, edge = thisEdge, dormNumber = dormNumber, time = timeCounter, question = whichQuestion))
+          }
+        }
+      }
+    }
+  }
+
+  dEdges$dorm = factor(dEdges$dormNumber,
+                     levels = c(1,2,3,4),
+                     labels = c("TWinter", "RSpring", "TFall", "RFall"))
+
+  write.csv(dEdges, "data_edges_allDorms_allTime_q9.csv", row.names=F)
+
+#}
+
+
+
+
+setwd("~/Dropbox/3_R21/1_Trait Survey/Data processing/_Cleaned_for_Publishing/data")
+#write.csv(dEdges, "data_edges_allDorms_allTime_q5.csv", row.names=F)
+
+
+
+
+# combining all questions at t0 into a wide form data-frame
+dEdge_q1 = read.csv("data/data_edges_allDorms_allTime_q1.csv", header=T) 
+dEdge_q2 = read.csv("data/data_edges_allDorms_allTime_q2.csv", header=T) 
+dEdge_q3 = read.csv("data/data_edges_allDorms_allTime_q3.csv", header=T) 
+dEdge_q4 = read.csv("data/data_edges_allDorms_allTime_q4.csv", header=T) 
+dEdge_q5 = read.csv("data/data_edges_allDorms_allTime_q5.csv", header=T) 
+dEdge_q6 = read.csv("data/data_edges_allDorms_allTime_q6.csv", header=T) 
+dEdge_q7 = read.csv("data/data_edges_allDorms_allTime_q7.csv", header=T) 
+dEdge_q8 = read.csv("data/data_edges_allDorms_allTime_q8.csv", header=T) 
+dEdge_q9 = read.csv("data/data_edges_allDorms_allTime_q9.csv", header=T) 
+
+dEdge_q1 = subset(dEdge_q1, dEdge_q1$time==2)
+dEdge_q2 = subset(dEdge_q2, dEdge_q2$time==2)
+dEdge_q3 = subset(dEdge_q3, dEdge_q3$time==2)
+dEdge_q4 = subset(dEdge_q4, dEdge_q4$time==2)
+dEdge_q5 = subset(dEdge_q5, dEdge_q5$time==2)
+dEdge_q6 = subset(dEdge_q6, dEdge_q6$time==2)
+dEdge_q7 = subset(dEdge_q7, dEdge_q7$time==2)
+dEdge_q8 = subset(dEdge_q8, dEdge_q8$time==2)
+dEdge_q9 = subset(dEdge_q9, dEdge_q9$time==2)
+
+# change name of "edge" variable
+colnames(dEdge_q1)[3]="q1_edge"
+
+dEdge = dEdge_q1[,c(1,2,4,5,6,7,3)]
+
+dEdge$q2_edge = dEdge_q2$edge
+dEdge$q3_edge = dEdge_q3$edge
+dEdge$q4_edge = dEdge_q4$edge
+dEdge$q5_edge = dEdge_q5$edge
+dEdge$q6_edge = dEdge_q6$edge
+dEdge$q7_edge = dEdge_q7$edge
+dEdge$q8_edge = dEdge_q8$edge
+dEdge$q9_edge = dEdge_q9$edge
+
+#write.csv(dEdge, "data_edges_allDorms_allQuestions_t0.csv", row.names=F)
+#write.csv(dEdge, "data_edges_allDorms_allQuestions_t1.csv", row.names=F)
+#write.csv(dEdge, "data_edges_allDorms_allQuestions_t2.csv", row.names=F)
+
+
+```
+
+
+
+
+```{r edge-level-analysis, echo=FALSE}
+#homophilyVariableList = c("Gender_bin", "Race", "Floor", "Major_recode", 
+#                          "Major_BySchool", "Rlgn", "PolPrty", "FinclAid", "CtznStatus_bin")
+
+# 
+# variableList = c("IRI_PT", "IRI_EC", "IRI_PD", "PosEmp_avg", "LTES_avg", "PSA_avg",
+#                  "IRQ_TN", "IRQ_TP", "IRQ_EN", "IRQ_EP", "IRQ_TOTAL", "MCSDS_avg"
+#                  "NTB_avg", "PANAS_PosAvg", "PANAS_NegAvg",
+#                  "BFI_e", "BFI_a", "BFI_c", "BFI_n", "BFI_o",
+#                  "NPI15_avg", "BIS_avg", "BAS_avg", "BAS_Reward", "BAS_fun", "BAS_drive",
+#                  "SWLS_avg", "SHS_avg", "Loneliness_avg", "PSS_avg",
+#                  "STAI_MEAN", "CESD_avg", "HPS_avg", "RSQ_avg",  "RSQ_Brood",  "RSQ_Ponder",
+#                  "SSS_Stnfrd", "FatherEd_recode", "MotherEd_recode",  "FmlyIncome", "FmlyStatus")
+
+variableList = c("IRI_PT", "IRI_EC")
+
+setwd("~/Dropbox/3_R21/1_Trait Survey/Data processing/_Cleaned_for_Publishing/data")
+dEdges = read.csv("data_edges_allDorms_allTime_q1.csv", header=T)
+
+dEdges = calculateListOfPairVariables_toFrom(dNodes, dEdges, variableList)
+
+
+dEdges$from_IRI_PT_high = dEdges$fromIRI_PT > median(dEdges$fromIRI_PT)
+dEdges$to_IRI_PT_high = dEdges$toIRI_PT > median(dEdges$toIRI_PT)
+dEdges$IRI_PT_homophily = dEdges$from_IRI_PT_high == dEdges$to_IRI_PT_high
+
+summary(glm(edge ~ IRI_PT_homophily, dEdges, family=binomial))
+
+```
+
+
+```{r cleaning-for-initial-submission-2017-01-02, echo=FALSE}
+# This chunk takes dNodesTime and cleans it up by isolating only time1, and removing unanalyzed variables.
+# for initial submission to Science
+setwd("~/Dropbox/3_R21/1_Trait Survey/Data processing/_Cleaned_for_Publishing/data")
+dNodesTime = read.csv("data_allDorms_allTime.csv", header=T)
+
+dNodes = subset(dNodesTime, dNodesTime$timeFactor==0)
+dNodes = dNodes[,c("ID", "dorm", #"Floor", 
+                   "Empathy_Factor", "NegAffect_Factor", "PosAffect_Factor", "LifeSatTransf_Factor",
+                   ## demographics
+                   #"Age", "Gender_bin", 
+                   ## "Race_1", "Race_2", "Race_3", "Race_4", "Race_5", "Race_6", "Race_7", "Race_8", "Race_9", 
+                   #"Race_cat", "Major_recode", "Major_BySchool", "Rlgn", "PolPrty", 
+                   #"FinclAid", "Born_bin", "YearsUS", "CtznStatus_bin", 
+                   #"Siblings", "FatherEd_recode", "MotherEd_recode", "FmlyIncome",
+
+                   ## trait surveys
+                   "IRI_PT", "IRI_EC", "IRI_PD", "PosEmp_avg", "LTES_avg", "PSA_avg", ## empathy and prosociality
+                   "BFI_e", "BFI_a", "BFI_c", "BFI_n", "BFI_o", "BAS_avg", ## personality 1
+                   "BAS_reward", "BAS_fun", "BAS_drive", "BIS_avg", "NTB_avg", ## personality 2
+                   "PANAS_PosAvg", "PANAS_NegAvg", "SWLS_avg", "SHS_avg", ## well-being 1
+                   "Loneliness_avg", "PSS_avg", "FmlyStatus", "SSS_Stnfrd", ## well-being 2
+                   "CESD_avg", "STAI_MEAN", "HPS_avg", "RSQ_avg", "RSQ_Brood", "RSQ_Ponder", "NPI15_avg", ## clinical
+                   "MCSDS_avg", "IRQ_TOTAL", "IRQ_TN", "IRQ_TP", "IRQ_EN", "IRQ_EP", ## miscellaneous
+                   
+                   ## network variables
+                   "inDegreeQ1", # "outDegreeFullQ1", "outDegreeQ1", "numReciprocalQ1", "pageRankQ1", 
+                   #"neighborhood2inQ1", "neighborhood2outQ1", "authorityScoreQ1", "hubScoreQ1", 
+                   #"betweennessCentralityQ1", "closenessCentralityQ1", "localClusteringCoefficientQ1",
+                   "inDegreeQ2", # "outDegreeFullQ2", "outDegreeQ2", "numReciprocalQ2", "pageRankQ2", 
+                   #"neighborhood2inQ2", "neighborhood2outQ2", "authorityScoreQ2", "hubScoreQ2", 
+                   #"betweennessCentralityQ2", "closenessCentralityQ2", "localClusteringCoefficientQ2",
+                   "inDegreeQ3", # "outDegreeFullQ3", "outDegreeQ3", "numReciprocalQ3", "pageRankQ3", 
+                   #"neighborhood2inQ3", "neighborhood2outQ3", "authorityScoreQ3", "hubScoreQ3", 
+                   #"betweennessCentralityQ3", "closenessCentralityQ3", "localClusteringCoefficientQ3",
+                   "inDegreeQ4", # "outDegreeFullQ4", "outDegreeQ4", "numReciprocalQ4", "pageRankQ4", 
+                   #"neighborhood2inQ4", "neighborhood2outQ4", "authorityScoreQ4", "hubScoreQ4", 
+                   #"betweennessCentralityQ4", "closenessCentralityQ4", "localClusteringCoefficientQ4",
+                   "inDegreeQ5", # "outDegreeFullQ5", "outDegreeQ5", "numReciprocalQ5", "pageRankQ5", 
+                   #"neighborhood2inQ5", "neighborhood2outQ5", "authorityScoreQ5", "hubScoreQ5", 
+                   #"betweennessCentralityQ5", "closenessCentralityQ5", "localClusteringCoefficientQ5",
+                   "inDegreeQ6", # "outDegreeFullQ6", "outDegreeQ6", "numReciprocalQ6", "pageRankQ6", 
+                   #"neighborhood2inQ6", "neighborhood2outQ6", "authorityScoreQ6", "hubScoreQ6", 
+                   #"betweennessCentralityQ6", "closenessCentralityQ6", "localClusteringCoefficientQ6",
+                   "inDegreeQ7", # "outDegreeFullQ7", "outDegreeQ7", "numReciprocalQ7", "pageRankQ7", 
+                   #"neighborhood2inQ7", "neighborhood2outQ7", "authorityScoreQ7", "hubScoreQ7", 
+                   #"betweennessCentralityQ7", "closenessCentralityQ7", "localClusteringCoefficientQ7",
+                   "inDegreeQ8", # "outDegreeFullQ8", "outDegreeQ8", "numReciprocalQ8", "pageRankQ8", 
+                   #"neighborhood2inQ8", "neighborhood2outQ8", "authorityScoreQ8", "hubScoreQ8", 
+                   #"betweennessCentralityQ8", "closenessCentralityQ8", "localClusteringCoefficientQ8",
+                   "inDegreeQ9"#, # "outDegreeFullQ9", "outDegreeQ9", "numReciprocalQ9", "pageRankQ9", 
+                   #"neighborhood2inQ9", "neighborhood2outQ9","authorityScoreQ9", "hubScoreQ9",
+                   #"betweennessCentralityQ9", "closenessCentralityQ9", "localClusteringCoefficientQ9" 
+                   )]
+
+dNodes$dorm = factor(dNodes$dorm, levels=c("TWinter", "RSpring", "TFall", "RFall"), labels=c(1,2,3,4))
+# recode dorm into 1 2 3 4
+
+write.csv(dNodes, "data_allDorms_release.csv", row.names=F)
+#write.csv(dNodes, "Study1Data_197participants.csv", row.names=F)
+
+```
+
